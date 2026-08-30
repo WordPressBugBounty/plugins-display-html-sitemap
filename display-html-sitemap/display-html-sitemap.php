@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Simple HTML Sitemap
-Version: 1.0.5
+Version: 1.1.0
 Description: Simple HTML Sitemap will generate HTML sitemap for your sitemap page. The plugin will not only show Page and Posts but also your other Custom Post Type like Products etc. You can also configure to show or hide your Post Types.
 Author: Dipak Kumar Pusti
 Text Domain: display-html-sitemap
