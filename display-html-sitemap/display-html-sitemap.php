@@ -1,11 +1,16 @@
 <?php
 /*
-Plugin Name: Simple HTML Sitemap
-Version: 1.1.0
-Description: Simple HTML Sitemap will generate HTML sitemap for your sitemap page. The plugin will not only show Page and Posts but also your other Custom Post Type like Products etc. You can also configure to show or hide your Post Types.
+Plugin Name: Display HTML Sitemap
+Version: 1.2.0
+Description: Display HTML Sitemap generates a clean hierarchical HTML sitemap. Supports Pages, Posts and all Custom Post Types with full admin control.
 Author: Dipak Kumar Pusti
+Author URI: https://profiles.wordpress.org/dkpbuilds/
 Text Domain: display-html-sitemap
-License: GPL2
+Requires PHP: 7.4
+Requires at least: 5.0
+Tested up to: 6.7
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Domain Path: /languages
 
 This program is free software; you can redistribute it and/or modify
@@ -29,37 +34,54 @@ define( 'DHSWP_PATH', plugin_dir_path( DHSWP_FILE ) );
 define( 'DHSWP_BASE', plugin_basename( DHSWP_FILE ) );
 
 /**
-* The DisplayHtmlSitemap class
-*
-* @package WordPress_Plugins
-* @subpackage DisplayHtmlSitemap
-* @since 1.0.0
-*/
-class DisplayHtmlSitemap {
+ * Main plugin class.
+ *
+ * @since 1.0.0
+ */
+final class Display_Html_Sitemap {
 
 	/**
- 	* The DisplayHtmlSitemap class constructor
- 	* initializing required stuff for the plugin
- 	*
-	* PHP 5 Constructor
- 	*
- 	* @since 1.0.0
- 	*/
-	function __construct() {
-		
-		$this->textdomain_loaded = false;
+	 * Instance of this class.
+	 *
+	 * @var self
+	 */
+	private static $instance = null;
+
+	/**
+	 * Whether textdomain has been loaded.
+	 *
+	 * @var bool
+	 */
+	private $textdomain_loaded = false;
+
+	/**
+	 * Returns the single instance of this class.
+	 *
+	 * @return self
+	 */
+	public static function get_instance() {
+		if ( null === self::$instance ) {
+			self::$instance = new self();
+		}
+		return self::$instance;
+	}
+
+	/**
+	 * Constructor.
+	 */
+	private function __construct() {
 
 		add_action( 'plugins_loaded', array( $this, 'load_textdomain' ) );
 		add_action( 'admin_menu', array( $this, 'display_sitemap_menu' ) );
 		add_action( 'admin_init', array( $this, 'dhswp_set_default_option' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'plugin_action_links_' . DHSWP_BASE,  array( $this, 'dhswp_plugin_actions_links' ) );
+		add_action( 'plugin_action_links_' . DHSWP_BASE, array( $this, 'dhswp_plugin_actions_links' ) );
 
 		// Saving the settings page
 		add_action( 'wp_loaded', array( $this, 'dhswp_save_options' ) );
 
 		// Generating Shortcode for Plugin
-		add_shortcode( 'display-html-sitemap', array( $this, 'shortcode_dhswp_sitemap' ) ); 
+		add_shortcode( 'display-html-sitemap', array( $this, 'shortcode_dhswp_sitemap' ) );
 	}
 
 	/**
@@ -158,26 +180,27 @@ class DisplayHtmlSitemap {
  	*/
 	function dhswp_save_options() {
 
-		// storing plugin options as array
-		if( isset($_POST['dhswp-update']) && 'Save Changes' == $_POST['dhswp-update'] ) {
+		if ( isset( $_POST['dhswp-update'] ) && 'Save Changes' === $_POST['dhswp-update'] ) {
 
-			if( check_admin_referer( 'save_sitemap_option', 'save_sitemap_option' ) && current_user_can( 'manage_options' ) ) {
+			if ( check_admin_referer( 'save_sitemap_option', 'save_sitemap_option' ) && current_user_can( 'manage_options' ) ) {
 
-				update_option( 'dhswp_sortorder', sanitize_text_field( $_POST['dhswp-sortorder'] ) );
-				update_option( 'dhswp_exclude', sanitize_text_field( $_POST['dhswp-exclude'] ) );
-				
-				$post_types  = $this->dhswp_post_types();
-				
-				if( count( $post_types ) > 0 ) { 
+				// Sanitize all inputs
+				update_option( 'dhswp_sortorder', sanitize_text_field( wp_unslash( $_POST['dhswp-sortorder'] ?? '' ) ) );
+				update_option( 'dhswp_exclude', sanitize_text_field( wp_unslash( $_POST['dhswp-exclude'] ?? '' ) ) );
 
+				$post_types = $this->dhswp_post_types();
+
+				if ( count( $post_types ) > 0 ) {
 					foreach ( $post_types as $post_type ) {
-					
-						if( isset( $_POST['dhswp_active_'.$post_type->name] ) && 'on' == $_POST['dhswp_active_'.$post_type->name] )
-							update_option( 'dhswp_active_' . $post_type->name, 'active' );
-						else
-							update_option( 'dhswp_active_' . $post_type->name, 'deactive' );
+						$active_key   = 'dhswp_active_' . $post_type->name;
+						$newname_key  = 'dhswp_newname_' . $post_type->name;
 
-						update_option( 'dhswp_newname_'.$post_type->name, $_POST['dhswp_newname_'.$post_type->name] );
+						$active = ( isset( $_POST[ $active_key ] ) && 'on' === $_POST[ $active_key ] ) ? 'active' : 'deactive';
+						update_option( $active_key, $active );
+
+						// Sanitize new name
+						$newname = isset( $_POST[ $newname_key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $newname_key ] ) ) : '';
+						update_option( $newname_key, $newname );
 					}
 				}
 
@@ -330,109 +353,156 @@ class DisplayHtmlSitemap {
 	/**
  	* Generating shortcode for html sitemap
  	* that will be used in pages or widgets
- 	* Shortcode : [display-html-sitemap]
  	*
  	* @since 1.0.0
+ 	* @param array $atts Shortcode attributes.
+ 	* @return string
  	*/
 	function shortcode_dhswp_sitemap( $atts ) {
 
-		$return            		= '<div class="dhswp-html-sitemap-wrapper">';
-		$post_types        		= $this->dhswp_post_types();
-		$dhswp_sortorder 		= get_option( 'dhswp_sortorder' );
-		$dhswp_sortorder_array 	= explode( ',', $dhswp_sortorder );
-		
-		foreach( $dhswp_sortorder_array as $post_type ) {
-			
-			if( get_option( 'dhswp_active_'.$post_type ) == 'active' ) {
-				
-				if( get_option('dhswp_newname_' . $post_type) != '' ) {
-					$newname = get_option('dhswp_newname_'.$post_type);
-				}
-				$return.= $this->dhswp_get_post_by_post_type( $post_type , $newname );
+		$atts = shortcode_atts(
+			array(
+				'orderby'        => 'menu_order',
+				'order'          => 'ASC',
+				'posts_per_page' => -1,
+				'number'         => -1,        // alias
+				'exclude'        => '',
+				'hierarchical'   => 1,
+			),
+			$atts,
+			'display-html-sitemap'
+		);
+
+		// Support both 'posts_per_page' and legacy 'number'
+		$posts_per_page = ( -1 !== (int) $atts['posts_per_page'] ) ? (int) $atts['posts_per_page'] : (int) $atts['number'];
+
+		$return = '<div class="dhswp-html-sitemap-wrapper">';
+
+		// Cache frequently used data
+		$post_types            = $this->dhswp_post_types();
+		$dhswp_sortorder       = get_option( 'dhswp_sortorder', '' );
+		$dhswp_sortorder_array = array_filter( explode( ',', $dhswp_sortorder ) );
+
+		foreach ( $dhswp_sortorder_array as $post_type ) {
+			$post_type = trim( $post_type );
+			if ( empty( $post_type ) || get_option( 'dhswp_active_' . $post_type ) !== 'active' ) {
+				continue;
 			}
+
+			// Ensure new name is always defined
+			$newname = isset( $post_types[ $post_type ] ) ? $post_types[ $post_type ]->labels->name : $post_type;
+
+			if ( get_option( 'dhswp_newname_' . $post_type ) !== '' ) {
+				$newname = get_option( 'dhswp_newname_' . $post_type );
+			}
+
+			$return .= $this->dhswp_get_post_by_post_type(
+				$post_type,
+				$newname,
+				$atts['orderby'],
+				$atts['order'],
+				$posts_per_page,
+				$atts['exclude'],
+				(bool) $atts['hierarchical']
+			);
 		}
-		
+
 		$return .= '</div> <!-- .dhswp-html-sitemap-wrapper -->';
-		
+
 		return $return;
 	}
 
 	/**
- 	* Functions to get posts under pos types for the 
- 	* html site map run through the short code
+ 	* Get posts for a specific post type and build heading + list.
+ 	* Updated in 1.1.0 to support shortcode parameters.
  	*
  	* @since 1.0.0
+ 	* @param string $postype Post type name.
+ 	* @param string $title Display title.
+ 	* @param string $orderby Query orderby.
+ 	* @param string $order Query order.
+ 	* @param int    $posts_per_page Number of posts.
+ 	* @param string $shortcode_exclude Additional exclude IDs from shortcode.
+ 	* @param bool   $hierarchical Whether to show nested structure.
+ 	* @return string
  	*/
-	function dhswp_get_post_by_post_type( $postype , $title , $orderby = 'menu_order' , $order = 'ASC' ){
-		
+	function dhswp_get_post_by_post_type( $postype, $title, $orderby = 'menu_order', $order = 'ASC', $posts_per_page = -1, $shortcode_exclude = '', $hierarchical = true ) {
+
 		global $post;
 
-		$return 		= '';
-		$curr_page_id 	= '';
-		
-		if( isset($post->ID) ) {
-			$curr_page_id = $post->ID;
-		}
-		
-		$args = array( 
-			'post_type' 	 => $postype, 
-			'posts_per_page' => -1, 
-			'orderby' 		 => $orderby, 
-			'order' 		 => $order 
+		$return       = '';
+		$curr_page_id = isset( $post->ID ) ? absint( $post->ID ) : 0;
+
+		$args = array(
+			'post_type'      => $postype,
+			'posts_per_page' => $posts_per_page,
+			'orderby'        => $orderby,
+			'order'          => strtoupper( $order ),
 		);
 
-		if( 'page' === $postype ) {
+		if ( 'page' === $postype ) {
 			$args['post__not_in'] = array( $curr_page_id );
 		}
 
 		$loop = new WP_Query( $args );
+		wp_reset_postdata();
 
-		// Restting WP_Query
-		wp_reset_query();
-		
-		$posts 	= $loop->posts;
-		$return = '<h2 class="dhswp-html-sitemap-post-title dhswp-'.$loop->query_vars['post_type'].'-title">'.$title.'</h2>';
-		
-		if( count( $posts) > 0 ) {
-			
-			$return.= '<ul class="dhswp-html-sitemap-post-list dhswp-'.$loop->query_vars['post_type'].'-list">';
+		$posts = $loop->posts;
+		$return = '<h2 class="dhswp-html-sitemap-post-title dhswp-' . esc_attr( $loop->query_vars['post_type'] ) . '-title">' . esc_html( $title ) . '</h2>';
+
+		if ( count( $posts ) > 0 ) {
+
+			// Combine global exclude with shortcode exclude
+			$global_exclude  = get_option( 'dhswp_exclude' );
+			$global_ids      = $global_exclude ? array_map( 'absint', explode( ',', $global_exclude ) ) : array();
+			$shortcode_ids   = $shortcode_exclude ? array_map( 'absint', explode( ',', $shortcode_exclude ) ) : array();
+			$exclude_ids     = array_unique( array_merge( $global_ids, $shortcode_ids ) );
+
+			$return .= '<ul class="dhswp-html-sitemap-post-list dhswp-' . esc_attr( $loop->query_vars['post_type'] ) . '-list">';
 			$parent_id = 0;
-			$return.= $this->dhswp_get_subpost( $posts, $parent_id );
-			$return.= '</ul>';
+			$return   .= $this->dhswp_get_subpost( $posts, $parent_id, false, $exclude_ids, (bool) $hierarchical );
+			$return   .= '</ul>';
 		}
 
 		return $return;
 	}
 
-	function dhswp_get_subpost( $posts , $parent_id, $display_ul = false ) {
-		
+	/**
+ 	* Recursively build hierarchical or flat list.
+ 	* Updated in 1.1.0 to accept shortcode-level exclude and hierarchical flag.
+ 	*
+ 	* @since 1.0.0
+ 	*/
+	function dhswp_get_subpost( $posts, $parent_id, $display_ul = false, $exclude_ids = array(), $hierarchical = true ) {
+
 		$return = '';
-		
-		$dhswp_exclude = get_option( 'dhswp_exclude'  );
-		$dhswp_exclude = explode( ',', $dhswp_exclude );
 
-		if( $posts > 0 ) {
+		if ( ! empty( $posts ) ) {
 
-			foreach( $posts as $post ) {
-				
-				if( $post->post_parent == $parent_id ) {
+			foreach ( $posts as $post ) {
 
-					if( !in_array( $post->ID, $dhswp_exclude ) ) {
+				if ( (int) $post->post_parent === (int) $parent_id ) {
+
+					if ( ! in_array( (int) $post->ID, $exclude_ids, true ) ) {
 
 						$return .= '<li>';
-						$return .= '<a href="'.get_permalink($post->ID).'">'.$post->post_title.'</a>';
-						$return .= $this->dhswp_get_subpost( $posts, $post->ID, true );
+						$return .= '<a href="' . esc_url( get_permalink( $post->ID ) ) . '">' . esc_html( $post->post_title ) . '</a>';
+
+						if ( $hierarchical ) {
+							$return .= $this->dhswp_get_subpost( $posts, $post->ID, true, $exclude_ids, true );
+						}
 						$return .= '</li>';
 					}
 				}
 			}
 
-			if( $return != '' && $display_ul ) {
-				$return = '<ul>'.$return.'</ul>';
+			if ( '' !== $return && $display_ul ) {
+				$return = '<ul>' . $return . '</ul>';
 			}
 		}
+
 		return $return;
 	}
 }
 
-new DisplayHtmlSitemap();
+Display_Html_Sitemap::get_instance();

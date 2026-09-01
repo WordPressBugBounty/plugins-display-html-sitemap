@@ -1,21 +1,31 @@
-﻿=== Simple HTML Sitemap ===
+﻿=== Display HTML Sitemap ===
 Contributors: dkpbuilds
 Tags: post type, custom post type, settings, sitemap, html sitemap
 Donate link: https://www.paypal.me/obstinatedipak
-Requires at least: 4.0
-Tested up to: 6.6
-Stable tag: 1.1.0
+Requires at least: 5.0
+Requires PHP: 7.4
+Tested up to: 6.7
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Simple HTML Sitemap creates beautiful sitemap for you website with it's dedicated shortcode.
+Display HTML Sitemap creates a beautiful, configurable HTML sitemap for your website. It supports Pages, Posts, and all Custom Post Types. You can reorder, rename, enable/disable post types, and exclude specific posts.
 
 == Description ==
-Simple HTML Sitemap will generate HTML sitemap for your sitemap page. The plugin will not only show Page and Posts but also your other Custom Post Type like Products etc. You can also configure to show or hide your Post Types.
+Display HTML Sitemap generates a clean hierarchical HTML sitemap. It supports all public post types and includes a settings page for full control.
 
 = Available Shortcodes =
 
-* [display-html-sitemap]
+* `[display-html-sitemap]` — Basic usage (uses saved settings)
+* `[display-html-sitemap orderby="menu_order" order="ASC" posts_per_page="-1" exclude=""]` — With parameters
+
+**Shortcode Parameters** (all optional):
+
+* `orderby` — `menu_order`, `title`, `date`, `modified`, `rand` (default: `menu_order`)
+* `order` — `ASC` or `DESC` (default: `ASC`)
+* `posts_per_page` / `number` — Number of items to show (`-1` = all, default: `-1`)
+* `exclude` — Comma separated post IDs to hide (overrides global exclude setting)
+* `hierarchical` — `1` (default) for nested tree, `0` for flat list
 
 == Installation ==
 1. Download the plugin and unzip it.
@@ -41,7 +51,17 @@ Yes, it will list all custom post types for you on settings page. You can choose
 2. Shortcode to be used in Sitemap Page
 3. Sitemap page displaying posts
 
+== Upgrade Notice ==
+= 1.2.0 =
+Added shortcode parameters (orderby, order, posts_per_page, exclude, hierarchical), global post exclude setting, and other improvements.
+
 == Changelog ==
+= 1.2.0 =
+* Added shortcode parameters (orderby, order, posts_per_page/number, exclude, hierarchical)
+* Added global post exclude setting
+* Renamed plugin to Display HTML Sitemap
+* Requires PHP 7.4
+* Tested up to WordPress 6.7
 = 1.0.5 =
 * UI Updates
 = 1.0.4 =
@@ -58,7 +78,3 @@ Yes, it will list all custom post types for you on settings page. You can choose
 * Minor Improvements
 = 1.0.0 =
 * Intial realease
-
-== Upgrade Notice ==
-= 1.0.5 =
-New update is ready fixing some minor bugs and code refinement. Please update to the latest version.
