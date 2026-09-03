@@ -4,8 +4,7 @@ Tags: post type, custom post type, settings, sitemap, html sitemap
 Donate link: https://www.paypal.me/obstinatedipak
 Requires at least: 5.0
 Requires PHP: 7.4
-Tested up to: 6.7
-Stable tag: 1.2.0
+Tested up to: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -52,10 +51,18 @@ Yes, it will list all custom post types for you on settings page. You can choose
 3. Sitemap page displaying posts
 
 == Upgrade Notice ==
-= 1.2.0 =
-Added shortcode parameters (orderby, order, posts_per_page, exclude, hierarchical), global post exclude setting, and other improvements.
+= 1.2.1 =
+* Fixed missing child posts when using hierarchical=0 flat list mode
+* Fixed fatal error on admin settings page
+* Fixed CSS layout: column header alignment and slug wrapping
+* Fixed backward compatibility for get_option() returning false
 
 == Changelog ==
+= 1.2.1 =
+* Fixed missing child posts when using hierarchical=0 flat list mode
+* Fixed fatal error on admin settings page
+* Fixed CSS layout: column header alignment and slug wrapping
+* Fixed backward compatibility for get_option() returning false
 = 1.2.0 =
 * Added shortcode parameters (orderby, order, posts_per_page/number, exclude, hierarchical)
 * Added global post exclude setting
