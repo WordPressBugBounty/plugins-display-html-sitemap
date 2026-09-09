@@ -1,5 +1,6 @@
 ﻿=== Display HTML Sitemap ===
 Contributors: dkpbuilds
+Stable tag: 1.2.2
 Tags: post type, custom post type, settings, sitemap, html sitemap
 Donate link: https://www.paypal.me/obstinatedipak
 Requires at least: 5.0
@@ -8,10 +9,10 @@ Tested up to: 7.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Display HTML Sitemap creates a beautiful, configurable HTML sitemap for your website. It supports Pages, Posts, and all Custom Post Types. You can reorder, rename, enable/disable post types, and exclude specific posts.
+Display HTML Sitemap creates a configurable HTML sitemap supporting Pages, Posts, and Custom Post Types, with reorder and exclude options.
 
 == Description ==
-Display HTML Sitemap generates a clean hierarchical HTML sitemap. It supports all public post types and includes a settings page for full control.
+Display HTML Sitemap creates a beautiful, configurable HTML sitemap for your website. It supports Pages, Posts, and all Custom Post Types. You can reorder, rename, enable/disable post types, and exclude specific posts.
 
 = Available Shortcodes =
 
@@ -51,6 +52,9 @@ Yes, it will list all custom post types for you on settings page. You can choose
 3. Sitemap page displaying posts
 
 == Upgrade Notice ==
+= 1.2.2 =
+* Fixed fatal error on Settings > HTML Sitemap page caused by incorrect class name reference
+
 = 1.2.1 =
 * Fixed missing child posts when using hierarchical=0 flat list mode
 * Fixed fatal error on admin settings page
@@ -58,6 +62,9 @@ Yes, it will list all custom post types for you on settings page. You can choose
 * Fixed backward compatibility for get_option() returning false
 
 == Changelog ==
+= 1.2.2 =
+* Fixed fatal error on Settings > HTML Sitemap page caused by incorrect class name reference
+
 = 1.2.1 =
 * Fixed missing child posts when using hierarchical=0 flat list mode
 * Fixed fatal error on admin settings page

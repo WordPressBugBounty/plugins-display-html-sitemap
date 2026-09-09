@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Initializing Sitemap Object
-$htmlSitemap = new DisplayHtmlSitemap();
+$htmlSitemap = Display_Html_Sitemap::get_instance();
 
 // Retrive all options
 $dhswp_sortorder = get_option('dhswp_sortorder');

@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Display HTML Sitemap
-Version: 1.2.1
+Version: 1.2.2
 Description: Display HTML Sitemap generates a clean hierarchical HTML sitemap. Supports Pages, Posts and all Custom Post Types with full admin control.
 Author: Dipak Kumar Pusti
 Author URI: https://profiles.wordpress.org/dkpbuilds/
